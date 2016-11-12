@@ -1,0 +1,10 @@
+def main([string] args) -> int {
+	[bool] doors = [false] * 101;
+	for(int i : 1..101) {
+		for(int j : i..101) {
+			if(i % j == 0) {
+				doors[j] = !doors[j];
+			}
+		}
+	}
+}

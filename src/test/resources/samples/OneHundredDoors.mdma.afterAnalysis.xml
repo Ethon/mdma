@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ModuleNode column="0" line="0">
+    <TopLevelStatements>
+        <FunctionNode column="0" line="1" name="main">
+            <ReturnType>
+                <NamedTypeNode column="27" line="1">int</NamedTypeNode>
+            </ReturnType>
+            <Arguments>
+                <VariableDeclarationNode column="9" line="1" name="args">
+                    <Type>
+                        <ListTypeNode column="9" line="1">
+                            <SubType>
+                                <NamedTypeNode column="10" line="1">string</NamedTypeNode>
+                            </SubType>
+                        </ListTypeNode>
+                    </Type>
+                </VariableDeclarationNode>
+            </Arguments>
+            <Body>
+                <VariableDeclarationNode column="1" line="2" name="doors">
+                    <Type>
+                        <ListTypeNode column="1" line="2">
+                            <SubType>
+                                <NamedTypeNode column="2" line="2">bool</NamedTypeNode>
+                            </SubType>
+                        </ListTypeNode>
+                    </Type>
+                    <AssignedValue>
+                        <MultiplyExpressionNode column="16" line="2" type="[bool]">
+                            <ListExpressionNode column="16" line="2" type="[bool]">
+                                <BoolExpressionNode column="17" line="2" type="bool">false</BoolExpressionNode>
+                            </ListExpressionNode>
+                            <IntegerExpressionNode column="26" line="2" type="int">101</IntegerExpressionNode>
+                        </MultiplyExpressionNode>
+                    </AssignedValue>
+                </VariableDeclarationNode>
+                <ForRangeLoopStatementNode column="1" line="3">
+                    <Variable>
+                        <VariableDeclarationNode column="5" line="3" name="i">
+                            <Type>
+                                <NamedTypeNode column="5" line="3">int</NamedTypeNode>
+                            </Type>
+                        </VariableDeclarationNode>
+                    </Variable>
+                    <Range>
+                        <RangeExpressionNode column="13" line="3" type="int..">
+                            <IntegerExpressionNode column="13" line="3" type="int">1</IntegerExpressionNode>
+                            <IntegerExpressionNode column="16" line="3" type="int">101</IntegerExpressionNode>
+                        </RangeExpressionNode>
+                    </Range>
+                    <Body>
+                        <ForRangeLoopStatementNode column="2" line="4">
+                            <Variable>
+                                <VariableDeclarationNode column="6" line="4" name="j">
+                                    <Type>
+                                        <NamedTypeNode column="6" line="4">int</NamedTypeNode>
+                                    </Type>
+                                </VariableDeclarationNode>
+                            </Variable>
+                            <Range>
+                                <RangeExpressionNode column="14" line="4" type="int..">
+                                    <IdentifierExpressionNode column="14" line="4" type="int">i</IdentifierExpressionNode>
+                                    <IntegerExpressionNode column="17" line="4" type="int">101</IntegerExpressionNode>
+                                </RangeExpressionNode>
+                            </Range>
+                            <Body>
+                                <IfStatementNode column="3" line="5">
+                                    <Condition>
+                                        <EqualExpressionNode column="6" line="5" type="bool">
+                                            <ModuloExpressionNode column="6" line="5" type="int">
+                                                <IdentifierExpressionNode column="6" line="5" type="int">i</IdentifierExpressionNode>
+                                                <IdentifierExpressionNode column="10" line="5" type="int">j</IdentifierExpressionNode>
+                                            </ModuloExpressionNode>
+                                            <IntegerExpressionNode column="15" line="5" type="int">0</IntegerExpressionNode>
+                                        </EqualExpressionNode>
+                                    </Condition>
+                                    <Body>
+                                        <ExpressionStatementNode column="4" line="6">
+                                            <AssignmentExpressionNode column="4" line="6" type="bool">
+                                                <IndexExpressionNode column="4" line="6" type="bool">
+                                                    <IdentifierExpressionNode column="4" line="6" type="[bool]">doors</IdentifierExpressionNode>
+                                                    <IdentifierExpressionNode column="10" line="6" type="int">j</IdentifierExpressionNode>
+                                                </IndexExpressionNode>
+                                                <NegateExpressionNode column="15" line="6" type="bool">
+                                                    <IndexExpressionNode column="16" line="6" type="bool">
+                                                        <IdentifierExpressionNode column="16" line="6" type="[bool]">doors</IdentifierExpressionNode>
+                                                        <IdentifierExpressionNode column="22" line="6" type="int">j</IdentifierExpressionNode>
+                                                    </IndexExpressionNode>
+                                                </NegateExpressionNode>
+                                            </AssignmentExpressionNode>
+                                        </ExpressionStatementNode>
+                                    </Body>
+                                </IfStatementNode>
+                            </Body>
+                        </ForRangeLoopStatementNode>
+                    </Body>
+                </ForRangeLoopStatementNode>
+            </Body>
+        </FunctionNode>
+    </TopLevelStatements>
+</ModuleNode>
