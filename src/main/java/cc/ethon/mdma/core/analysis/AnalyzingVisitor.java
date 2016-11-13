@@ -71,7 +71,6 @@ class AnalyzingVisitor implements AstVisitor {
 		BUILTIN_PRIMITIVE_TYPES.put("void", VoidType.VOID);
 	}
 
-	private final String moduleName;
 	private State state;
 	private final Deque<SymbolTable> symbolTables;
 	private Type currentType;
@@ -110,11 +109,15 @@ class AnalyzingVisitor implements AstVisitor {
 		}
 	}
 
+	private CompilerMessage createMessageForNode(Node node, String description) {
+		return new CompilerMessage(results.getModule().getName(), node.getLine(), node.getColumn(), description);
+	}
+
 	private Symbol lookupSymbol(Node node, String name, boolean recursive) {
 		final Symbol symbol = getSymbolTable().lookupSymbol(name, recursive);
 		if (symbol == null) {
 			final String description = String.format("Symbol %s was not defined", name);
-			final CompilerMessage message = new CompilerMessage(moduleName, node.getLine(), node.getColumn(), description);
+			final CompilerMessage message = createMessageForNode(node, description);
 			results.getErrors().add(message);
 			state = State.HardError;
 		}
@@ -127,7 +130,7 @@ class AnalyzingVisitor implements AstVisitor {
 			final Node node = symbol.getDefiningNode();
 			final Node existingNode = existing.getDefiningNode();
 			final String description = String.format("Symbol %s was already defined at %d:%d", name, existingNode.getLine(), existingNode.getColumn());
-			final CompilerMessage message = new CompilerMessage(moduleName, node.getLine(), node.getColumn(), description);
+			final CompilerMessage message = createMessageForNode(node, description);
 			results.getErrors().add(message);
 			state = State.HardError;
 		}
@@ -137,7 +140,7 @@ class AnalyzingVisitor implements AstVisitor {
 		final Type type = BUILTIN_PRIMITIVE_TYPES.get(name);
 		if (type == null) {
 			final String description = "Unknown type name " + name;
-			final CompilerMessage message = new CompilerMessage(moduleName, node.getLine(), node.getColumn(), description);
+			final CompilerMessage message = createMessageForNode(node, description);
 			results.getErrors().add(message);
 			state = State.HardError;
 		}
@@ -179,7 +182,7 @@ class AnalyzingVisitor implements AstVisitor {
 		final OperationTestResult testResult = test.apply(leftType, rightType);
 		if (!testResult.result) {
 			final String description = String.format("No operator defined for expression %s %s %s", leftType, testResult.operator, rightType);
-			final CompilerMessage message = new CompilerMessage(moduleName, binaryExpressionNode.getLine(), binaryExpressionNode.getColumn(), description);
+			final CompilerMessage message = createMessageForNode(binaryExpressionNode, description);
 			results.getErrors().add(message);
 			state = State.HardError;
 			return;
@@ -187,8 +190,7 @@ class AnalyzingVisitor implements AstVisitor {
 		binaryExpressionNode.setType(testResult.type);
 	}
 
-	public AnalyzingVisitor(String moduleName, AnalysisResults results, SymbolTable parentSymbolTable) {
-		this.moduleName = moduleName;
+	public AnalyzingVisitor(AnalysisResults results, SymbolTable parentSymbolTable) {
 		state = State.NoError;
 		symbolTables = new ArrayDeque<SymbolTable>();
 		currentType = null;
@@ -310,7 +312,7 @@ class AnalyzingVisitor implements AstVisitor {
 
 		if (valueType != null && !type.supportsAssign(valueType)) {
 			final String description = String.format("No operator defined for expression %s = %s", type, valueType);
-			final CompilerMessage message = new CompilerMessage(moduleName, variableDeclarationNode.getLine(), variableDeclarationNode.getColumn(), description);
+			final CompilerMessage message = createMessageForNode(variableDeclarationNode, description);
 			results.getErrors().add(message);
 			state = State.SoftError;
 		}
@@ -342,7 +344,7 @@ class AnalyzingVisitor implements AstVisitor {
 			final Type newSubType = subType == null ? expressionNode.getType() : expressionNode.getType().commonType(subType);
 			if (newSubType == null) {
 				final String description = String.format("Incompatibles types %s and %s in list expression", subType, expressionNode.getType());
-				final CompilerMessage message = new CompilerMessage(moduleName, listExpressionNode.getLine(), listExpressionNode.getColumn(), description);
+				final CompilerMessage message = createMessageForNode(listExpressionNode, description);
 				results.getErrors().add(message);
 				state = State.HardError;
 				return;
@@ -382,7 +384,7 @@ class AnalyzingVisitor implements AstVisitor {
 			final Type rangeType = forRangeLoop.getRange().getType();
 			if (!rangeType.isRange() && rangeType.isList()) {
 				final String description = "range or list required for iteration";
-				final CompilerMessage message = new CompilerMessage(moduleName, forRangeLoop.getLine(), forRangeLoop.getColumn(), description);
+				final CompilerMessage message = createMessageForNode(forRangeLoop, description);
 				results.getErrors().add(message);
 				state = State.SoftError;
 			}
@@ -391,7 +393,7 @@ class AnalyzingVisitor implements AstVisitor {
 			final Type variableType = evaluateTypeNode(forRangeLoop.getVariable().getType());
 			if (!variableType.supportsAssign(subType)) {
 				final String description = String.format("Can't iterate with a variable of type %s over %s", variableType, rangeType);
-				final CompilerMessage message = new CompilerMessage(moduleName, forRangeLoop.getLine(), forRangeLoop.getColumn(), description);
+				final CompilerMessage message = createMessageForNode(forRangeLoop, description);
 				results.getErrors().add(message);
 				state = State.SoftError;
 			}
@@ -458,7 +460,7 @@ class AnalyzingVisitor implements AstVisitor {
 		Type conditionType = conditionNode.getType();
 		if (conditionType != null && !conditionType.isBool()) {
 			final String description = String.format("Type %s is not allowed in an if condition, bool required", conditionType);
-			final CompilerMessage message = new CompilerMessage(moduleName, conditionNode.getLine(), conditionNode.getColumn(), description);
+			final CompilerMessage message = createMessageForNode(conditionNode, description);
 			results.getErrors().add(message);
 			state = State.SoftError;
 		}
@@ -476,7 +478,7 @@ class AnalyzingVisitor implements AstVisitor {
 				conditionType = conditionNode.getType();
 				if (conditionType != null && !conditionType.isBool()) {
 					final String description = String.format("Type %s is not allowed in an if condition, bool required", conditionType);
-					final CompilerMessage message = new CompilerMessage(moduleName, conditionNode.getLine(), conditionNode.getColumn(), description);
+					final CompilerMessage message = createMessageForNode(conditionNode, description);
 					results.getErrors().add(message);
 					state = State.SoftError;
 				}
@@ -511,7 +513,7 @@ class AnalyzingVisitor implements AstVisitor {
 		final Type childType = child.getType();
 		if (!childType.supportsNegate()) {
 			final String description = String.format("No operator defined for expression !%s", childType);
-			final CompilerMessage message = new CompilerMessage(moduleName, negateExpressionNode.getLine(), negateExpressionNode.getColumn(), description);
+			final CompilerMessage message = createMessageForNode(negateExpressionNode, description);
 			results.getErrors().add(message);
 			state = State.HardError;
 			return;

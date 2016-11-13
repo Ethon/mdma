@@ -23,6 +23,7 @@ import cc.ethon.mdma.core.analysis.AnalysisResults;
 import cc.ethon.mdma.core.analysis.Analyzer;
 import cc.ethon.mdma.frontend.ParseResults;
 import cc.ethon.mdma.frontend.Parser;
+import cc.ethon.mdma.frontend.ast.ModuleNode;
 import cc.ethon.mdma.frontend.ast.Node;
 import cc.ethon.mdma.test.sampletest.util.ParentCheckingVisitor;
 
@@ -73,7 +74,7 @@ public abstract class AbstractSampleTest {
 	}
 
 	private AnalysisResults analyze(ParseResults parseResults) {
-		final AnalysisResults results = new Analyzer().analyze(parseResults.getModuleName(), parseResults.getNode(), null);
+		final AnalysisResults results = new Analyzer().analyzeModule(parseResults.getModuleName(), (ModuleNode) parseResults.getNode(), null);
 		if (!results.success()) {
 			System.err.println("*** Analysis Errors ***");
 			for (final CompilerMessage error : results.getErrors()) {

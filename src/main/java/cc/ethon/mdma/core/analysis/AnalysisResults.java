@@ -8,6 +8,7 @@ import cc.ethon.mdma.common.CompilerMessage;
 
 public class AnalysisResults {
 
+	private final Module module;
 	private List<CompilerMessage> infos;
 	private List<CompilerMessage> warnings;
 	private List<CompilerMessage> errors;
@@ -18,11 +19,15 @@ public class AnalysisResults {
 		errors = Collections.unmodifiableList(errors);
 	}
 
-	public AnalysisResults() {
-		super();
+	public AnalysisResults(Module module) {
+		this.module = module;
 		this.infos = new ArrayList<CompilerMessage>();
 		this.warnings = new ArrayList<CompilerMessage>();
 		this.errors = new ArrayList<CompilerMessage>();
+	}
+
+	public Module getModule() {
+		return module;
 	}
 
 	public List<CompilerMessage> getInfos() {
