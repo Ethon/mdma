@@ -9,6 +9,7 @@ public class Analyzer {
 		final AnalysisResults results = new AnalysisResults();
 		final AnalyzingVisitor analyzingVisitor = new AnalyzingVisitor(moduleName, results, parentSymbolTable);
 		node.accept(analyzingVisitor);
+		results.finishAnalysis();
 		return results;
 	}
 

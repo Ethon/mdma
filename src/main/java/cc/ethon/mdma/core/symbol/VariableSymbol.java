@@ -8,8 +8,8 @@ public class VariableSymbol extends Symbol {
 	private final Type type;
 	private final String name;
 
-	public VariableSymbol(Node definingNode, Type type, String name) {
-		super(definingNode);
+	public VariableSymbol(Node definingNode, SymbolVisibility visibility, Type type, String name) {
+		super(definingNode, visibility);
 		this.type = type;
 		this.name = name;
 	}

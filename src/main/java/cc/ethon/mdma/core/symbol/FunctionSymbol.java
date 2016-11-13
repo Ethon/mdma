@@ -10,12 +10,14 @@ public class FunctionSymbol extends Symbol {
 	private final Type returnType;
 	private final String name;
 	private final List<Type> argumentTypes;
+	private final List<String> argumentNames;
 
-	public FunctionSymbol(Node definingNode, Type returnType, String name, List<Type> argumentTypes) {
-		super(definingNode);
+	public FunctionSymbol(Node definingNode, SymbolVisibility visibility, Type returnType, String name, List<Type> argumentTypes, List<String> argumentNames) {
+		super(definingNode, visibility);
 		this.returnType = returnType;
 		this.name = name;
 		this.argumentTypes = argumentTypes;
+		this.argumentNames = argumentNames;
 	}
 
 	public Type getReturnType() {
@@ -30,9 +32,13 @@ public class FunctionSymbol extends Symbol {
 		return argumentTypes;
 	}
 
+	public List<String> getArgumentNames() {
+		return argumentNames;
+	}
+
 	@Override
 	public String toString() {
-		return "FunctionSymbol [returnType=" + returnType + ", name=" + name + ", argumentTypes=" + argumentTypes + "]";
+		return "FunctionSymbol [returnType=" + returnType + ", name=" + name + ", argumentTypes=" + argumentTypes + ", argumentNames=" + argumentNames + "]";
 	}
 
 }

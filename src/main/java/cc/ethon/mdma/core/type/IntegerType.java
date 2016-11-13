@@ -11,7 +11,7 @@ public class IntegerType extends Type {
 	public static final IntegerType INT = new IntegerType("int", 32, Integer.MIN_VALUE, Integer.MAX_VALUE);
 	public static final IntegerType LONG = new IntegerType("long", 64, Long.MIN_VALUE, Long.MAX_VALUE);
 	public static final IntegerType BIGINT = new IntegerType("bigint", INFINITE_SIZE, 0, 0);
-	public static final IntegerType CHAR = new IntegerType("char", 16, Character.MIN_VALUE, Character.MAX_VALUE);
+	public static final IntegerType CHAR = new IntegerType("char", 8, Character.MIN_VALUE, Character.MAX_VALUE);
 
 	private final String name;
 	private final int size;

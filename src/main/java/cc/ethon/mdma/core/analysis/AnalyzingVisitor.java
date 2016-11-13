@@ -12,6 +12,7 @@ import cc.ethon.mdma.common.CompilerMessage;
 import cc.ethon.mdma.core.symbol.FunctionSymbol;
 import cc.ethon.mdma.core.symbol.Symbol;
 import cc.ethon.mdma.core.symbol.SymbolTable;
+import cc.ethon.mdma.core.symbol.SymbolVisibility;
 import cc.ethon.mdma.core.symbol.VariableSymbol;
 import cc.ethon.mdma.core.type.BoolType;
 import cc.ethon.mdma.core.type.IntegerType;
@@ -75,6 +76,7 @@ class AnalyzingVisitor implements AstVisitor {
 	private final Deque<SymbolTable> symbolTables;
 	private Type currentType;
 	private final AnalysisResults results;
+	private boolean isTopLevel;
 
 	private void softenError() {
 		if (state == State.HardError) {
@@ -191,6 +193,7 @@ class AnalyzingVisitor implements AstVisitor {
 		symbolTables = new ArrayDeque<SymbolTable>();
 		currentType = null;
 		this.results = results;
+		this.isTopLevel = true;
 
 		if (parentSymbolTable != null) {
 			symbolTables.addLast(parentSymbolTable);
@@ -203,27 +206,34 @@ class AnalyzingVisitor implements AstVisitor {
 			return;
 		}
 
+		isTopLevel = false;
 		startSymbolTable();
 		final Type type = functionNode.getReturnType() == null ? VoidType.VOID : evaluateTypeNode(functionNode.getReturnType());
 		if (state == State.HardError) {
 			softenError();
+			isTopLevel = true;
 			return;
 		}
 
 		final List<Type> argumentTypes = new ArrayList<Type>();
+		final List<String> argumentNames = new ArrayList<String>();
 		for (final VariableDeclarationNode variableDeclarationNode : functionNode.getArguments()) {
 			variableDeclarationNode.accept(this);
 			final Symbol symbol = getSymbolTable().lookupSymbol(variableDeclarationNode.getName(), false);
 			argumentTypes.add(((VariableSymbol) symbol).getType());
+			argumentNames.add(variableDeclarationNode.getName());
 		}
 		doVisit(functionNode.getChildren());
 		if (state == State.HardError) {
 			softenError();
+			isTopLevel = true;
 			return;
 		}
 
 		endSymbolTable();
-		defineSymbol(functionNode.getName(), new FunctionSymbol(functionNode, type, functionNode.getName(), argumentTypes));
+		defineSymbol(functionNode.getName(), new FunctionSymbol(functionNode, SymbolVisibility.PUBLIC, type, functionNode.getName(), argumentTypes,
+				argumentNames));
+		isTopLevel = true;
 	}
 
 	@Override
@@ -261,6 +271,7 @@ class AnalyzingVisitor implements AstVisitor {
 			return;
 		}
 
+		isTopLevel = true;
 		startSymbolTable();
 		doVisit(moduleNode.getChildren());
 		endSymbolTable();
@@ -305,7 +316,7 @@ class AnalyzingVisitor implements AstVisitor {
 		}
 
 		final String name = variableDeclarationNode.getName();
-		defineSymbol(name, new VariableSymbol(variableDeclarationNode, type, name));
+		defineSymbol(name, new VariableSymbol(variableDeclarationNode, isTopLevel ? SymbolVisibility.PUBLIC : SymbolVisibility.LOCAL, type, name));
 	}
 
 	@Override
