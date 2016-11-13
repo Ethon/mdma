@@ -233,8 +233,9 @@ class AnalyzingVisitor implements AstVisitor {
 		}
 
 		endSymbolTable();
-		defineSymbol(functionNode.getName(), new FunctionSymbol(functionNode, SymbolVisibility.PUBLIC, type, functionNode.getName(), argumentTypes,
-				argumentNames));
+		final FunctionSymbol symbol = new FunctionSymbol(functionNode, SymbolVisibility.PUBLIC, type, functionNode.getName(), argumentTypes, argumentNames);
+		defineSymbol(functionNode.getName(), symbol);
+		results.getModule().getGlobalFunctions().add(symbol);
 		isTopLevel = true;
 	}
 
