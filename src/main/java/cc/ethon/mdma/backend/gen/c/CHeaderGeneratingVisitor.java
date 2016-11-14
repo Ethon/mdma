@@ -31,6 +31,7 @@ import cc.ethon.mdma.frontend.ast.VariableDeclarationNode;
 
 public class CHeaderGeneratingVisitor implements AstVisitor {
 
+	private static final List<String> SYSTEM_INCLUDES = Arrays.asList("mdma.h");
 
 	private final CTypeMapper typeMapper;
 	private final CCodeEmitter emitter;
