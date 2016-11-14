@@ -1,6 +1,7 @@
 package cc.ethon.mdma.backend.gen.c;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.List;
 
 import cc.ethon.mdma.core.symbol.FunctionSymbol;
@@ -29,6 +30,7 @@ import cc.ethon.mdma.frontend.ast.StatementBlockNode;
 import cc.ethon.mdma.frontend.ast.VariableDeclarationNode;
 
 public class CHeaderGeneratingVisitor implements AstVisitor {
+
 
 	private final CTypeMapper typeMapper;
 	private final CCodeEmitter emitter;
@@ -69,6 +71,10 @@ public class CHeaderGeneratingVisitor implements AstVisitor {
 	@Override
 	public void visit(ModuleNode moduleNode) {
 		final String guard = emitter.startIncludeGuarded();
+		for (final String include : SYSTEM_INCLUDES) {
+			emitter.emitSystemInclude(include);
+		}
+		emitter.emitEmptyLine();
 		doVisit(moduleNode.getChildren());
 		emitter.endIncludeGuarded(guard);
 	}

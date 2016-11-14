@@ -56,6 +56,10 @@ public class CCodeEmitter {
 		this.indentLevel = 0;
 	}
 
+	public void emitEmptyLine() {
+		out.println();
+	}
+
 	public String startIncludeGuarded() {
 		final String guard = "HEADER_UUID_" + UUID.randomUUID().toString().replace('-', '_').toUpperCase();
 		out.println("#ifndef " + guard);
@@ -78,6 +82,14 @@ public class CCodeEmitter {
 		decreaseIndentation();
 		indent();
 		out.println("}");
+	}
+
+	public void emitSystemInclude(String include) {
+		out.println("#include <" + include + ">");
+	}
+
+	public void emitUserInclude(String include) {
+		out.println("#include \"" + include + "\"");
 	}
 
 	public void emitFunctionDeclaration(FunctionSymbol symbol) {
