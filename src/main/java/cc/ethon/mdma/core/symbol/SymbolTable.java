@@ -14,6 +14,10 @@ public class SymbolTable {
 		this.symbols = new TreeMap<String, Symbol>();
 	}
 
+	public SymbolTable getParent() {
+		return parent;
+	}
+
 	public Map<String, Symbol> getSymbols() {
 		return Collections.unmodifiableMap(symbols);
 	}

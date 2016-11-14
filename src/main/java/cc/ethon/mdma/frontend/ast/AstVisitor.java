@@ -22,7 +22,7 @@ public interface AstVisitor {
 
 	void visit(MultiplyExpressionNode multiplyExpressionNode);
 
-	void visit(ForRangeLoopStatementNode forRangeLoop);
+	void visit(ForRangeLoopStatementNode forRangeLoopStatementNode);
 
 	void visit(RangeExpressionNode rangeExpressionNode);
 

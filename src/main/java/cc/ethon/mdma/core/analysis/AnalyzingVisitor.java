@@ -84,7 +84,7 @@ class AnalyzingVisitor implements AstVisitor {
 	}
 
 	private void startSymbolTable() {
-		symbolTables.push(new SymbolTable(symbolTables.peekLast()));
+		symbolTables.addLast(new SymbolTable(symbolTables.peekLast()));
 	}
 
 	private SymbolTable endSymbolTable() {
@@ -93,6 +93,10 @@ class AnalyzingVisitor implements AstVisitor {
 
 	private SymbolTable getSymbolTable() {
 		return symbolTables.peekLast();
+	}
+
+	private void setSymbolTableForNode(Node node) {
+		node.setSymbolTable(getSymbolTable());
 	}
 
 	private Type evaluateTypeNode(TypeNode typeNode) {
@@ -163,6 +167,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(binaryExpressionNode);
 
 		// Visit left side.
 		binaryExpressionNode.getLeft().accept(this);
@@ -207,6 +212,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(functionNode);
 
 		isTopLevel = false;
 		startSymbolTable();
@@ -244,6 +250,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(integerNode);
 		integerNode.setType(IntegerType.INT);
 	}
 
@@ -273,6 +280,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(moduleNode);
 
 		isTopLevel = true;
 		startSymbolTable();
@@ -286,6 +294,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(statementBlockNode);
 
 		startSymbolTable();
 		doVisit(statementBlockNode.getChildren());
@@ -298,6 +307,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(variableDeclarationNode);
 
 		final Type type = evaluateTypeNode(variableDeclarationNode.getType());
 		if (state == State.HardError) {
@@ -327,6 +337,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(boolExpressionNode);
 		boolExpressionNode.setType(BoolType.BOOL);
 	}
 
@@ -335,6 +346,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(listExpressionNode);
 
 		Type subType = null;
 		for (final ExpressionNode expressionNode : listExpressionNode.getValues()) {
@@ -367,41 +379,42 @@ class AnalyzingVisitor implements AstVisitor {
 	}
 
 	@Override
-	public void visit(ForRangeLoopStatementNode forRangeLoop) {
+	public void visit(ForRangeLoopStatementNode forRangeLoopStatementNode) {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(forRangeLoopStatementNode);
 
-		forRangeLoop.getVariable().accept(this);
+		startSymbolTable();
+		forRangeLoopStatementNode.getVariable().accept(this);
 		if (state == State.HardError) {
 			softenError();
 			return;
 		}
 
-		forRangeLoop.getRange().accept(this);
+		forRangeLoopStatementNode.getRange().accept(this);
 		softenError();
 
-		if (forRangeLoop.getRange().getType() != null) {
-			final Type rangeType = forRangeLoop.getRange().getType();
-			if (!rangeType.isRange() && rangeType.isList()) {
+		if (forRangeLoopStatementNode.getRange().getType() != null) {
+			final Type rangeType = forRangeLoopStatementNode.getRange().getType();
+			if (!rangeType.isRange() && !rangeType.isList()) {
 				final String description = "range or list required for iteration";
-				final CompilerMessage message = createMessageForNode(forRangeLoop, description);
+				final CompilerMessage message = createMessageForNode(forRangeLoopStatementNode, description);
 				results.getErrors().add(message);
 				state = State.SoftError;
 			}
 
 			final Type subType = rangeType.isRange() ? ((RangeType) rangeType).getSubType() : ((ListType) rangeType).getSubType();
-			final Type variableType = evaluateTypeNode(forRangeLoop.getVariable().getType());
+			final Type variableType = evaluateTypeNode(forRangeLoopStatementNode.getVariable().getType());
 			if (!variableType.supportsAssign(subType)) {
 				final String description = String.format("Can't iterate with a variable of type %s over %s", variableType, rangeType);
-				final CompilerMessage message = createMessageForNode(forRangeLoop, description);
+				final CompilerMessage message = createMessageForNode(forRangeLoopStatementNode, description);
 				results.getErrors().add(message);
 				state = State.SoftError;
 			}
 		}
 
-		startSymbolTable();
-		doVisit(forRangeLoop.getChildren());
+		doVisit(forRangeLoopStatementNode.getChildren());
 		endSymbolTable();
 		softenError();
 	}
@@ -421,6 +434,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(identifierExpressionNode);
 
 		final VariableSymbol symbol = (VariableSymbol) lookupSymbol(identifierExpressionNode, identifierExpressionNode.getName(), true);
 		if (state == State.HardError || symbol == null) {
@@ -454,6 +468,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(ifStatementNode);
 
 		ExpressionNode conditionNode = ifStatementNode.getCondition();
 		conditionNode.accept(this);
@@ -504,6 +519,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(negateExpressionNode);
 
 		final ExpressionNode child = negateExpressionNode.getChild();
 		negateExpressionNode.getChild().accept(this);
@@ -537,6 +553,7 @@ class AnalyzingVisitor implements AstVisitor {
 		if (state == State.HardError) {
 			return;
 		}
+		setSymbolTableForNode(expressionStatementNode);
 		expressionStatementNode.getExpression().accept(this);
 	}
 
