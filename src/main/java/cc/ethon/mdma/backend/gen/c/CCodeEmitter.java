@@ -1,10 +1,13 @@
 package cc.ethon.mdma.backend.gen.c;
 
 import java.io.PrintStream;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import cc.ethon.mdma.core.symbol.FunctionSymbol;
 import cc.ethon.mdma.core.symbol.SymbolVisibility;
+import cc.ethon.mdma.core.type.Type;
 
 public class CCodeEmitter {
 
@@ -23,7 +26,7 @@ public class CCodeEmitter {
 
 	private void indent() {
 		for (int i = 0; i < indentLevel; ++i) {
-			out.println(indent);
+			out.print(indent);
 		}
 	}
 
@@ -92,13 +95,49 @@ public class CCodeEmitter {
 		out.println("#include \"" + include + "\"");
 	}
 
-	public void emitFunctionDeclaration(FunctionSymbol symbol) {
+	public void emitLineDirective(int line, String fileName) {
 		indent();
+		if (fileName != null) {
+			out.println("#line " + line + " " + fileName);
+		} else {
+			out.println("#line " + line);
+		}
+	}
+
+	public void emitFunctionDeclaration(FunctionSymbol symbol) {
 		if (symbol.getVisibility() == SymbolVisibility.MODULE_PRIVATE) {
 			out.print("static ");
 		}
 		emitFunctionHeaderPart(symbol);
 		out.println(";");
 		out.println();
+	}
+
+	public void startFunctionDefinition(FunctionSymbol symbol) {
+		if (symbol.getVisibility() == SymbolVisibility.MODULE_PRIVATE) {
+			out.print("static ");
+		}
+		emitFunctionHeaderPart(symbol);
+		startStatementBlock();
+	}
+
+	public void endFunctionDefinition() {
+		endStatementBlock();
+	}
+
+	public void emitVariableDeclaration(Type type, String name, String value) {
+		indent();
+		final String typeName = typeMapper.getTypeName(type);
+		if (value != null) {
+			out.printf("%s %s = %s;%n", typeName, name, value);
+		} else {
+			out.printf("%s %s;%n", typeName, name);
+		}
+	}
+
+	public void emitFunctionCall(String name, List<String> arguments) {
+		indent();
+		final String joined = arguments.stream().collect(Collectors.joining(", "));
+		out.println(name + "(" + joined + ")");
 	}
 }
