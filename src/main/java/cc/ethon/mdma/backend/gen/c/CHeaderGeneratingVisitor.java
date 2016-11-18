@@ -26,6 +26,7 @@ import cc.ethon.mdma.frontend.ast.NamedTypeNode;
 import cc.ethon.mdma.frontend.ast.NegateExpressionNode;
 import cc.ethon.mdma.frontend.ast.Node;
 import cc.ethon.mdma.frontend.ast.RangeExpressionNode;
+import cc.ethon.mdma.frontend.ast.ReturnStatementNode;
 import cc.ethon.mdma.frontend.ast.StatementBlockNode;
 import cc.ethon.mdma.frontend.ast.VariableDeclarationNode;
 
@@ -152,6 +153,11 @@ public class CHeaderGeneratingVisitor implements AstVisitor {
 
 	@Override
 	public void visit(IndexExpressionNode indexExpressionNode) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void visit(ReturnStatementNode returnStatementNode) {
 		throw new UnsupportedOperationException();
 	}
 

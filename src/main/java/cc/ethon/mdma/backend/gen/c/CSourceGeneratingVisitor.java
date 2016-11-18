@@ -33,6 +33,7 @@ import cc.ethon.mdma.frontend.ast.NamedTypeNode;
 import cc.ethon.mdma.frontend.ast.NegateExpressionNode;
 import cc.ethon.mdma.frontend.ast.Node;
 import cc.ethon.mdma.frontend.ast.RangeExpressionNode;
+import cc.ethon.mdma.frontend.ast.ReturnStatementNode;
 import cc.ethon.mdma.frontend.ast.StatementBlockNode;
 import cc.ethon.mdma.frontend.ast.VariableDeclarationNode;
 
@@ -208,6 +209,12 @@ public class CSourceGeneratingVisitor implements AstVisitor {
 
 	@Override
 	public void visit(IndexExpressionNode indexExpressionNode) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visit(ReturnStatementNode returnStatementNode) {
 		// TODO Auto-generated method stub
 
 	}

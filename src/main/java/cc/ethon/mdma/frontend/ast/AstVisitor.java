@@ -42,4 +42,6 @@ public interface AstVisitor {
 
 	void visit(IndexExpressionNode indexExpressionNode);
 
+	void visit(ReturnStatementNode returnStatementNode);
+
 }

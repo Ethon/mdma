@@ -44,6 +44,7 @@ import cc.ethon.mdma.frontend.ast.NamedTypeNode;
 import cc.ethon.mdma.frontend.ast.NegateExpressionNode;
 import cc.ethon.mdma.frontend.ast.Node;
 import cc.ethon.mdma.frontend.ast.RangeExpressionNode;
+import cc.ethon.mdma.frontend.ast.ReturnStatementNode;
 import cc.ethon.mdma.frontend.ast.StatementBlockNode;
 import cc.ethon.mdma.frontend.ast.TypeNode;
 import cc.ethon.mdma.frontend.ast.VariableDeclarationNode;
@@ -76,6 +77,7 @@ class AnalyzingVisitor implements AstVisitor {
 	private Type currentType;
 	private final AnalysisResults results;
 	private boolean isTopLevel;
+	private FunctionNode currentFunction;
 
 	private void softenError() {
 		if (state == State.HardError) {
@@ -117,13 +119,17 @@ class AnalyzingVisitor implements AstVisitor {
 		return new CompilerMessage(results.getModule().getName(), node.getLine(), node.getColumn(), description);
 	}
 
+	private void createErrorForNode(Node node, String description, State error) {
+		final CompilerMessage message = createMessageForNode(node, description);
+		results.getErrors().add(message);
+		state = error;
+	}
+
 	private Symbol lookupSymbol(Node node, String name, boolean recursive) {
 		final Symbol symbol = getSymbolTable().lookupSymbol(name, recursive);
 		if (symbol == null) {
 			final String description = String.format("Symbol %s was not defined", name);
-			final CompilerMessage message = createMessageForNode(node, description);
-			results.getErrors().add(message);
-			state = State.HardError;
+			createErrorForNode(node, description, State.HardError);
 		}
 		return symbol;
 	}
@@ -134,9 +140,7 @@ class AnalyzingVisitor implements AstVisitor {
 			final Node node = symbol.getDefiningNode();
 			final Node existingNode = existing.getDefiningNode();
 			final String description = String.format("Symbol %s was already defined at %d:%d", name, existingNode.getLine(), existingNode.getColumn());
-			final CompilerMessage message = createMessageForNode(node, description);
-			results.getErrors().add(message);
-			state = State.HardError;
+			createErrorForNode(node, description, State.HardError);
 		}
 	}
 
@@ -144,9 +148,7 @@ class AnalyzingVisitor implements AstVisitor {
 		final Type type = BUILTIN_PRIMITIVE_TYPES.get(name);
 		if (type == null) {
 			final String description = "Unknown type name " + name;
-			final CompilerMessage message = createMessageForNode(node, description);
-			results.getErrors().add(message);
-			state = State.HardError;
+			createErrorForNode(node, description, State.HardError);
 		}
 		return type;
 	}
@@ -187,9 +189,7 @@ class AnalyzingVisitor implements AstVisitor {
 		final OperationTestResult testResult = test.apply(leftType, rightType);
 		if (!testResult.result) {
 			final String description = String.format("No operator defined for expression %s %s %s", leftType, testResult.operator, rightType);
-			final CompilerMessage message = createMessageForNode(binaryExpressionNode, description);
-			results.getErrors().add(message);
-			state = State.HardError;
+			createErrorForNode(binaryExpressionNode, description, State.HardError);
 			return;
 		}
 		binaryExpressionNode.setType(testResult.type);
@@ -214,6 +214,7 @@ class AnalyzingVisitor implements AstVisitor {
 		}
 		setSymbolTableForNode(functionNode);
 
+		currentFunction = functionNode;
 		isTopLevel = false;
 		startSymbolTable();
 		final Type type = functionNode.getReturnType() == null ? VoidType.VOID : evaluateTypeNode(functionNode.getReturnType());
@@ -323,9 +324,7 @@ class AnalyzingVisitor implements AstVisitor {
 
 		if (valueType != null && !type.supportsAssign(valueType)) {
 			final String description = String.format("No operator defined for expression %s = %s", type, valueType);
-			final CompilerMessage message = createMessageForNode(variableDeclarationNode, description);
-			results.getErrors().add(message);
-			state = State.SoftError;
+			createErrorForNode(variableDeclarationNode, description, State.SoftError);
 		}
 
 		final String name = variableDeclarationNode.getName();
@@ -357,9 +356,7 @@ class AnalyzingVisitor implements AstVisitor {
 			final Type newSubType = subType == null ? expressionNode.getType() : expressionNode.getType().commonType(subType);
 			if (newSubType == null) {
 				final String description = String.format("Incompatibles types %s and %s in list expression", subType, expressionNode.getType());
-				final CompilerMessage message = createMessageForNode(listExpressionNode, description);
-				results.getErrors().add(message);
-				state = State.HardError;
+				createErrorForNode(listExpressionNode, description, State.HardError);
 				return;
 			}
 			subType = newSubType;
@@ -399,18 +396,14 @@ class AnalyzingVisitor implements AstVisitor {
 			final Type rangeType = forRangeLoopStatementNode.getRange().getType();
 			if (!rangeType.isRange() && !rangeType.isList()) {
 				final String description = "range or list required for iteration";
-				final CompilerMessage message = createMessageForNode(forRangeLoopStatementNode, description);
-				results.getErrors().add(message);
-				state = State.SoftError;
+				createErrorForNode(forRangeLoopStatementNode, description, State.SoftError);
 			}
 
 			final Type subType = rangeType.isRange() ? ((RangeType) rangeType).getSubType() : ((ListType) rangeType).getSubType();
 			final Type variableType = evaluateTypeNode(forRangeLoopStatementNode.getVariable().getType());
 			if (!variableType.supportsAssign(subType)) {
 				final String description = String.format("Can't iterate with a variable of type %s over %s", variableType, rangeType);
-				final CompilerMessage message = createMessageForNode(forRangeLoopStatementNode, description);
-				results.getErrors().add(message);
-				state = State.SoftError;
+				createErrorForNode(forRangeLoopStatementNode, description, State.SoftError);
 			}
 		}
 
@@ -476,9 +469,7 @@ class AnalyzingVisitor implements AstVisitor {
 		Type conditionType = conditionNode.getType();
 		if (conditionType != null && !conditionType.isBool()) {
 			final String description = String.format("Type %s is not allowed in an if condition, bool required", conditionType);
-			final CompilerMessage message = createMessageForNode(conditionNode, description);
-			results.getErrors().add(message);
-			state = State.SoftError;
+			createErrorForNode(conditionNode, description, State.SoftError);
 		}
 
 		startSymbolTable();
@@ -494,9 +485,7 @@ class AnalyzingVisitor implements AstVisitor {
 				conditionType = conditionNode.getType();
 				if (conditionType != null && !conditionType.isBool()) {
 					final String description = String.format("Type %s is not allowed in an if condition, bool required", conditionType);
-					final CompilerMessage message = createMessageForNode(conditionNode, description);
-					results.getErrors().add(message);
-					state = State.SoftError;
+					createErrorForNode(conditionNode, description, State.SoftError);
 				}
 
 				startSymbolTable();
@@ -530,9 +519,7 @@ class AnalyzingVisitor implements AstVisitor {
 		final Type childType = child.getType();
 		if (!childType.supportsNegate()) {
 			final String description = String.format("No operator defined for expression !%s", childType);
-			final CompilerMessage message = createMessageForNode(negateExpressionNode, description);
-			results.getErrors().add(message);
-			state = State.HardError;
+			createErrorForNode(negateExpressionNode, description, State.HardError);
 			return;
 		}
 		negateExpressionNode.setType(childType.negateType());
@@ -567,4 +554,23 @@ class AnalyzingVisitor implements AstVisitor {
 		});
 	}
 
+	@Override
+	public void visit(ReturnStatementNode returnStatementNode) {
+		if (state == State.HardError) {
+			return;
+		}
+		setSymbolTableForNode(returnStatementNode);
+
+		returnStatementNode.getReturnedExpression().accept(this);
+		if (state == State.HardError) {
+			softenError();
+			return;
+		}
+		final Type functionType = evaluateTypeNode(currentFunction.getReturnType());
+		final Type type = returnStatementNode.getReturnedExpression().getType();
+		if (!functionType.supportsAssign(type)) {
+			final String description = String.format("Can't return %s in function returning %s", type, functionType);
+			createErrorForNode(returnStatementNode, description, State.SoftError);
+		}
+	}
 }

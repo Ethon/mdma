@@ -30,6 +30,7 @@ import cc.ethon.mdma.frontend.ast.NamedTypeNode;
 import cc.ethon.mdma.frontend.ast.NegateExpressionNode;
 import cc.ethon.mdma.frontend.ast.Node;
 import cc.ethon.mdma.frontend.ast.RangeExpressionNode;
+import cc.ethon.mdma.frontend.ast.ReturnStatementNode;
 import cc.ethon.mdma.frontend.ast.StatementBlockNode;
 import cc.ethon.mdma.frontend.ast.UnaryExpressionNode;
 import cc.ethon.mdma.frontend.ast.VariableDeclarationNode;
@@ -327,5 +328,15 @@ class XmlGeneratingVisitor implements AstVisitor {
 	@Override
 	public void visit(IndexExpressionNode indexExpressionNode) {
 		doVisitBinaryExpressionNode(indexExpressionNode);
+	}
+
+	@Override
+	public void visit(ReturnStatementNode returnStatementNode) {
+		createParentElement(returnStatementNode);
+		try {
+			doVisitWithoutAddingNewParent(returnStatementNode.getReturnedExpression());
+		} finally {
+			elementStack.pop();
+		}
 	}
 }

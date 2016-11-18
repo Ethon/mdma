@@ -29,6 +29,7 @@ import cc.ethon.mdma.MdmaParser.MultiplyExpressionContext;
 import cc.ethon.mdma.MdmaParser.NamedTypeContext;
 import cc.ethon.mdma.MdmaParser.NegateExpressionContext;
 import cc.ethon.mdma.MdmaParser.RangeExpressionContext;
+import cc.ethon.mdma.MdmaParser.ReturnStatementContext;
 import cc.ethon.mdma.MdmaParser.VariableDeclarationStatementContext;
 import cc.ethon.mdma.MdmaParser.VariableTypeNamePairContext;
 import cc.ethon.mdma.frontend.ast.AssignmentExpressionNode;
@@ -53,6 +54,7 @@ import cc.ethon.mdma.frontend.ast.NamedTypeNode;
 import cc.ethon.mdma.frontend.ast.NegateExpressionNode;
 import cc.ethon.mdma.frontend.ast.Node;
 import cc.ethon.mdma.frontend.ast.RangeExpressionNode;
+import cc.ethon.mdma.frontend.ast.ReturnStatementNode;
 import cc.ethon.mdma.frontend.ast.StatementNode;
 import cc.ethon.mdma.frontend.ast.TypeNode;
 import cc.ethon.mdma.frontend.ast.UnaryExpressionNode;
@@ -243,6 +245,14 @@ class AstGeneratingVisitor extends MdmaBaseVisitor<Node> {
 	public Node visitExpressionStatement(ExpressionStatementContext ctx) {
 		final ExpressionStatementNode node = createNode(ExpressionStatementNode.class, ctx.start);
 		node.setExpression(visitNode(ctx.expression(), node, ExpressionNode.class));
+		pushNode(node);
+		return node;
+	}
+
+	@Override
+	public Node visitReturnStatement(ReturnStatementContext ctx) {
+		final ReturnStatementNode node = createNode(ReturnStatementNode.class, ctx.start);
+		node.setReturnedExpression(visitNode(ctx.expression(), node, ExpressionNode.class));
 		pushNode(node);
 		return node;
 	}

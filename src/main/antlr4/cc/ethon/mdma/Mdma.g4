@@ -26,7 +26,8 @@ forRangeLoop: 'for' '(' variableTypeNamePair ':' expression ')' statementBlock;
 ifStatement: 'if' '(' expression ')' statementBlock elifStatement* elseStatement?;
 elifStatement: 'elif' '(' expression ')' statementBlock;
 elseStatement: 'else' statementBlock;
-statement: statementBlock | expressionStatement | emptyStatement | loopStatement | variableDeclarationStatement | ifStatement;
+returnStatement: 'return' expression ';';
+statement: statementBlock | expressionStatement | emptyStatement | loopStatement | variableDeclarationStatement | ifStatement | returnStatement;
 
 // Expression
 decIntExpression: DecInt;

@@ -27,6 +27,7 @@ import cc.ethon.mdma.frontend.ast.NamedTypeNode;
 import cc.ethon.mdma.frontend.ast.NegateExpressionNode;
 import cc.ethon.mdma.frontend.ast.Node;
 import cc.ethon.mdma.frontend.ast.RangeExpressionNode;
+import cc.ethon.mdma.frontend.ast.ReturnStatementNode;
 import cc.ethon.mdma.frontend.ast.StatementBlockNode;
 import cc.ethon.mdma.frontend.ast.UnaryExpressionNode;
 import cc.ethon.mdma.frontend.ast.VariableDeclarationNode;
@@ -201,6 +202,12 @@ public class ParentCheckingVisitor implements AstVisitor {
 	@Override
 	public void visit(IndexExpressionNode indexExpressionNode) {
 		assertBinaryExpression(indexExpressionNode);
+	}
+
+	@Override
+	public void visit(ReturnStatementNode returnStatementNode) {
+		assertParent(returnStatementNode);
+		visitChild(returnStatementNode, returnStatementNode.getReturnedExpression());
 	}
 
 }

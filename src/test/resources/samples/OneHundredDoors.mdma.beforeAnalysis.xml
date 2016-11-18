@@ -95,6 +95,9 @@
                         </ForRangeLoopStatementNode>
                     </Body>
                 </ForRangeLoopStatementNode>
+                <ReturnStatementNode column="1" line="10">
+                    <IntegerExpressionNode column="8" line="10">0</IntegerExpressionNode>
+                </ReturnStatementNode>
             </Body>
         </FunctionNode>
     </TopLevelStatements>
