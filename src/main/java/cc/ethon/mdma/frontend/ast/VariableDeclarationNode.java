@@ -1,6 +1,6 @@
 package cc.ethon.mdma.frontend.ast;
 
-public class VariableDeclarationNode extends Node {
+public class VariableDeclarationNode extends StatementNode {
 
 	private String name;
 	private TypeNode type;

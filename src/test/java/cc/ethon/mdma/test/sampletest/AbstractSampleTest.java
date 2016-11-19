@@ -18,6 +18,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import cc.ethon.mdma.backend.gen.xml.XmlGenerator;
+import cc.ethon.mdma.backend.interpreter.Interpreter;
+import cc.ethon.mdma.backend.interpreter.value.ListValue;
+import cc.ethon.mdma.backend.interpreter.value.ModuleValue;
+import cc.ethon.mdma.backend.interpreter.value.Value;
 import cc.ethon.mdma.common.CompilerMessage;
 import cc.ethon.mdma.core.analysis.AnalysisResults;
 import cc.ethon.mdma.core.analysis.Analyzer;
@@ -149,4 +153,15 @@ public abstract class AbstractSampleTest {
 		gen.setGenerateTypes(true);
 		Assert.assertEquals(getResourceFileContent(getXmlAfterAnalysisFileName()), createXmlString(gen, results.getNode()));
 	}
+
+	@Test
+	public void testInterpreted() {
+		final ParseResults results = parse();
+		analyze(results);
+		final Interpreter interpreter = new Interpreter();
+		final ModuleValue module = interpreter.interpreteModule((ModuleNode) results.getNode());
+		final Value result = module.access("main").call(ListValue.valueOf());
+		Assert.assertEquals(0, result.getIntegerValue());
+	}
+
 }
